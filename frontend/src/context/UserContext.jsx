@@ -4,7 +4,7 @@ import axios from "axios";
 export const userDataContext = createContext();
 
 const UserContext = ({ children }) => {
-  const serverUrl = "http://localhost:8000";
+  const serverUrl = "https://zenith-ai-virtual-assistant-b.onrender.com";
 
   const [userData, setUserData] = useState(null);
   const [selected, setSelected] = useState(null);
