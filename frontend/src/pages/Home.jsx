@@ -414,11 +414,13 @@ export default function Home() {
     assignVoice();
     if (!utt.voice) { setTimeout(assignVoice, 200); }
 
-    utt.onend = () => {
-      isSpeakingRef.current = false;
-      setSpeaking(false);
-      setTimeout(() => { if (restartRecognitionRef.current) restartRecognitionRef.current(); }, 400);
-    };
+   utt.onend = () => {
+  isSpeakingRef.current = false;
+  setSpeaking(false);
+  setTimeout(() => { 
+    if (restartRecognitionRef.current) restartRecognitionRef.current(); 
+  }, 400);
+};
     utt.onerror = (e) => {
       console.warn("TTS error:", e.error);
       isSpeakingRef.current = false;
@@ -561,15 +563,13 @@ export default function Home() {
     let lastClap = 0, cooldown = false;
 
     const activateAssistant = () => {
-      if (isSpeakingRef.current) return;
-      const greeting = getString(languageRef.current, "greeting", userData?.name || "");
-      speak(greeting);
-      setListening(true);
-      // FIX 3: mark clap active so recognition skips name gate
-      clapActiveRef.current = true;
-      // reset after 8s in case user doesn't speak
-      setTimeout(() => { clapActiveRef.current = false; }, 8000);
-    };
+  if (isSpeakingRef.current) return;
+  const greeting = getString(languageRef.current, "greeting", userData?.name || "");
+  clapActiveRef.current = true;
+  speak(greeting);
+  setListening(true);
+  setTimeout(() => { clapActiveRef.current = false; }, 10000);
+};
 
     const start = async () => {
       try {
