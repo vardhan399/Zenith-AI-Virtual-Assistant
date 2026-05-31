@@ -271,7 +271,8 @@ Zenith is different.
 
 ---
 
-**You don't talk to Zenith. You command it.**
+## You don't talk to Zenith. You command it.
 
-[![Try Zenith](https://img.shields.io/badge/▸-Launch_Zenith_AI-00e5ff?style=for-the-badge)] (https://zenith-ai-virtual-assistant.vercel.app/) ]
+[![Try Zenith](https://img.shields.io/badge/▸-Launch_Zenith_AI-00e5ff?style=for-the-badge)](https://zenith-ai-virtual-assistant.vercel.app/)
+
 </div>
