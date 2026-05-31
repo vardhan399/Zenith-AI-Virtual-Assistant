@@ -273,6 +273,6 @@ Zenith is different.
 
 **You don't talk to Zenith. You command it.**
 
-[![Try Zenith](https://img.shields.io/badge/▸-Launch_Zenith_AI-00e5ff?style=for-the-badge)](https://github.com/your-username/zenith-ai)
+[![Try Zenith](https://img.shields.io/badge/▸-Launch_Zenith_AI-00e5ff?style=for-the-badge)]([https://github.com/your-username/zenith-ai](https://zenith-ai-virtual-assistant.vercel.app/))
 
 </div>
