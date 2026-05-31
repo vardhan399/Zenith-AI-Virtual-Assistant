@@ -7,8 +7,10 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import UserRouter from './routes/user.routes.js';
 
-
 const app = express();
+
+app.set('trust proxy', 1);
+
 app.use(cors({
     origin: ["https://zenith-ai-virtual-assistant.vercel.app", "http://localhost:5173"],
     credentials: true
@@ -20,7 +22,6 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", UserRouter);
-
 
 app.listen(port, () => {
     connectDb();
