@@ -2,94 +2,73 @@ import genToken from "../config/token.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 
-
-// signUp controller
 export const signUp = async (req, res) => {
-try{
-    const {name,email,password} = req.body;
-    
-    const existEmail= await User.findOne({email});
-    
-    if(existEmail){
-        return res.status(400).json({message:"Email already exists!"})
+    try {
+        const { name, email, password } = req.body;
 
-    }
-    if(password.length < 6){
-        return res.status(400).json(
-            {
-                message:"Password must be at least 6 characters long!"
-            }
-        )
-    }
-    const hashedPassword  = await bcrypt.hash(password,10);
+        const existEmail = await User.findOne({ email });
+        if (existEmail) {
+            return res.status(400).json({ message: "Email already exists!" });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters long!" });
+        }
 
-    const user = await User.create({
-        name,
-        password: hashedPassword,
-        email
-    })
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await User.create({ name, password: hashedPassword, email });
+        const token = await genToken(user._id);
 
-    const token = await genToken(user._id);
-
-    res.cookie("token", token ,
-        {
-            httpOnly:true,
-            maxage: 5*24*60*60*1000,
-            sameSite:"strict",
-            secure:false
-        })
+        res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 5 * 24 * 60 * 60 * 1000,
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+            secure: process.env.NODE_ENV === "production" ? true : false
+        });
 
         return res.status(201).json(user);
-}
-catch(err){
-    return res.status(500).json({message:"signUp error: "+ err.message});
+    } catch (err) {
+        return res.status(500).json({ message: "signUp error: " + err.message });
+    }
+};
 
-}
-}
-
-
-// login controller
 export const login = async (req, res) => {
-try{
-    const {email,password} = req.body;
-    
-    const user= await User.findOne({email});
-    
-    if(!user){
-        return res.status(400).json({message:"email does not exist!"})
+    try {
+        const { email, password } = req.body;
 
-    }
-    const isMatch = await bcrypt.compare(password, user.password)
-    if(!isMatch){
-        return res.status(400).json({message:"invalid password !"})
-    }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "email does not exist!" });
+        }
 
-    const token = await genToken(user._id);
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "invalid password!" });
+        }
 
-    res.cookie("token", token ,
-        {
-            httpOnly:true,
-            maxage: 5*24*60*60*1000,
-            sameSite:"strict",
-            secure:false
-        })
+        const token = await genToken(user._id);
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 5 * 24 * 60 * 60 * 1000,
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+            secure: process.env.NODE_ENV === "production" ? true : false
+        });
 
         return res.status(200).json(user);
-}
-catch(err){
-    return res.status(500).json({message:"login error: "+ err.message});
+    } catch (err) {
+        return res.status(500).json({ message: "login error: " + err.message });
+    }
+};
 
-}
-}
-
-
-// logout controller
 export const logout = async (req, res) => {
-    try{
-        res.clearCookie("token")
-        return res.status(200).json({message:"logout successful"})
+    try {
+        res.clearCookie("token", {
+            httpOnly: true,
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+            secure: process.env.NODE_ENV === "production" ? true : false
+        });
+        return res.status(200).json({ message: "logout successful" });
+    } catch (err) {
+        return res.status(500).json({ message: "logout error: " + err.message });
     }
-    catch(err){
-         return res.status(500).json({message:"logout error: "+ err.message});
-    }
-}
+};
