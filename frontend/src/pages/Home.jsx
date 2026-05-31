@@ -5,9 +5,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import p3 from "../assets/p3.jpg";
 
-/* ─────────────────────────────────────────────
-   STRINGS — Hindi via Unicode escapes
-───────────────────────────────────────────── */
 const STRINGS = {
   "hi-IN": {
     greeting:  (name)       => "\u0939\u093E\u0901 " + name + "? \u092E\u0948\u0902 \u0906\u092A\u0915\u0940 \u0915\u0948\u0938\u0947 \u092E\u0926\u0926 \u0915\u0930 \u0938\u0915\u0924\u0940 \u0939\u0942\u0901?",
@@ -26,9 +23,6 @@ function getString(lang, key, ...args) {
   return fn ? fn(...args) : "";
 }
 
-/* ─────────────────────────────────────────────
-   RESPONSIVE ORBIT RADIUS
-───────────────────────────────────────────── */
 function useOrbitRadius() {
   const [radius, setRadius] = useState(160);
   useEffect(() => {
@@ -40,9 +34,6 @@ function useOrbitRadius() {
   return radius;
 }
 
-/* ─────────────────────────────────────────────
-   VOICE PICKER
-───────────────────────────────────────────── */
 function pickVoice(synth, gender, lang) {
   const voices = synth.getVoices();
   if (!voices.length) return null;
@@ -74,10 +65,6 @@ function pickVoice(synth, gender, lang) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   WAVEFORM VISUALISER — Canvas-based, pure CSS-variable free
-   mode: "idle" | "listening" | "speaking"
-═══════════════════════════════════════════════════════════ */
 function Waveform({ mode }) {
   const canvasRef = useRef(null);
   const rafRef    = useRef(null);
@@ -94,7 +81,6 @@ function Waveform({ mode }) {
 
     function drawIdle() {
       ctx.clearRect(0, 0, W, H);
-      // just a subtle flat line with slow pulse
       const t = tRef.current;
       ctx.beginPath();
       ctx.strokeStyle = "rgba(0,255,255,0.18)";
@@ -112,30 +98,22 @@ function Waveform({ mode }) {
       const BARS = 28;
       const barW = 3;
       const gap  = (W - BARS * barW) / (BARS + 1);
-
-      // animated frequency bars — mic input style, asymmetric heights
       for (let i = 0; i < BARS; i++) {
         const x = gap + i * (barW + gap);
-        // each bar has its own frequency for organic feel
         const h = 4
           + Math.abs(Math.sin(t * 2.1 + i * 0.55)) * 18
           + Math.abs(Math.sin(t * 1.3 + i * 1.1))  * 10
           + Math.abs(Math.sin(t * 3.7 + i * 0.3))  * 6;
         const alpha = 0.55 + Math.sin(t * 1.5 + i * 0.4) * 0.3;
-
-        // glow
         const grd = ctx.createLinearGradient(x, cy + h, x, cy - h);
         grd.addColorStop(0,   "rgba(0,255,255,0)");
         grd.addColorStop(0.4, "rgba(0,255,255," + alpha * 0.4 + ")");
         grd.addColorStop(1,   "rgba(0,255,255," + alpha + ")");
-
         ctx.fillStyle = grd;
         ctx.beginPath();
         ctx.roundRect(x, cy - h, barW, h * 2, 2);
         ctx.fill();
       }
-
-      // sonar ring that pulses outward
       const rings = 3;
       for (let r = 0; r < rings; r++) {
         const phase    = (t * 0.8 + r * (1 / rings)) % 1;
@@ -147,8 +125,6 @@ function Waveform({ mode }) {
         ctx.lineWidth   = 1.5;
         ctx.stroke();
       }
-
-      // center mic dot
       ctx.beginPath();
       ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(0,255,255,0.9)";
@@ -165,10 +141,8 @@ function Waveform({ mode }) {
       const BARS   = 32;
       const maxR   = H * 0.46;
       const minR   = 12;
-
       for (let i = 0; i < BARS; i++) {
         const angle = (i / BARS) * Math.PI * 2 - Math.PI / 2;
-        // layered sines for complex wave
         const amp =
           Math.abs(Math.sin(t * 3.2 + i * 0.45)) * 0.45 +
           Math.abs(Math.sin(t * 1.8 + i * 0.9))  * 0.30 +
@@ -178,16 +152,12 @@ function Waveform({ mode }) {
         const y1  = cy + Math.sin(angle) * minR;
         const x2  = cx + Math.cos(angle) * r;
         const y2  = cy + Math.sin(angle) * r;
-
         const alpha = 0.4 + amp * 0.6;
-        // color shifts from cyan → blue based on amplitude
         const g = Math.round(200 + amp * 55);
         const b = Math.round(200 + amp * 55);
-
         const grd = ctx.createLinearGradient(x1, y1, x2, y2);
         grd.addColorStop(0, "rgba(0," + g + "," + b + ",0.1)");
         grd.addColorStop(1, "rgba(0," + g + "," + b + "," + alpha + ")");
-
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -196,8 +166,6 @@ function Waveform({ mode }) {
         ctx.lineCap     = "round";
         ctx.stroke();
       }
-
-      // pulsing core
       const pulse = 0.7 + Math.sin(t * 4) * 0.3;
       ctx.beginPath();
       ctx.arc(cx, cy, minR * pulse, 0, Math.PI * 2);
@@ -206,8 +174,6 @@ function Waveform({ mode }) {
       ctx.strokeStyle = "rgba(0,255,255,0.7)";
       ctx.lineWidth   = 1.5;
       ctx.stroke();
-
-      // outer glow ring
       const outerR  = maxR * (0.9 + Math.sin(t * 2.5) * 0.06);
       ctx.beginPath();
       ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
@@ -241,15 +207,11 @@ function Waveform({ mode }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   HOME
-═══════════════════════════════════════════════════════════ */
 export default function Home() {
   const { userData, serverUrl, setUserData, getGeminiResponse } = useContext(userDataContext);
   const navigate    = useNavigate();
   const orbitRadius = useOrbitRadius();
 
-  /* ── state ── */
   const [stage,        setStage]        = useState("boot");
   const [listening,    setListening]    = useState(false);
   const [speaking,     setSpeaking]     = useState(false);
@@ -259,28 +221,25 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [voiceGender,  setVoiceGender]  = useState("female");
   const [language,     setLanguage]     = useState("en-IN");
-  const [isOrbiting,   setIsOrbiting]   = useState(true);
-  const [orbitAngle,   setOrbitAngle]   = useState(0);
 
-  /* ── refs ── */
-  const angleRef       = useRef(0);
-  const orbitRef       = useRef(null);
-  const isSpeakingRef  = useRef(false);
-  const voiceGenderRef = useRef(voiceGender);
-  const languageRef    = useRef(language);
-  const returnTimers   = useRef({});
-  const draggedSet     = useRef(new Set());
-  const synth          = window.speechSynthesis;
+  const angleRef         = useRef(0);
+  const orbitIntervalRef = useRef(null);
+  const freeRef          = useRef([false, false, false, false]);
+  const isSpeakingRef    = useRef(false);
+  const voiceGenderRef   = useRef(voiceGender);
+  const languageRef      = useRef(language);
+  const returnTimers     = useRef({});
+  // FIX 3: ref to track if clap-mode is active (skip name gate)
+  const clapActiveRef    = useRef(false);
+  const synth            = window.speechSynthesis;
 
   const restartRecognitionRef = useRef(null);
   const stopRecognitionRef    = useRef(null);
   const handleCommandRef      = useRef(null);
 
-  /* keep refs in sync */
   useEffect(() => { voiceGenderRef.current = voiceGender; }, [voiceGender]);
   useEffect(() => { languageRef.current    = language;    }, [language]);
 
-  /* ── PRELOAD VOICES ── */
   useEffect(() => {
     const load = () => synth.getVoices();
     load();
@@ -288,23 +247,6 @@ export default function Home() {
     return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
 
-  /* ── ORBIT ANIMATION ── */
-  useEffect(() => {
-    if (!isOrbiting) { clearInterval(orbitRef.current); return; }
-    orbitRef.current = setInterval(() => {
-      angleRef.current = (angleRef.current + 0.4) % 360;
-      setOrbitAngle(angleRef.current);
-    }, 16);
-    return () => clearInterval(orbitRef.current);
-  }, [isOrbiting]);
-
-  /* ── orbit math ── */
-  const getPos = (index, total, angle, r) => {
-    const rad = (((index / total) * 360 + angle) * Math.PI) / 180;
-    return { x: Math.cos(rad) * r, y: Math.sin(rad) * r };
-  };
-
-  /* ── per-button motion values ── */
   const btnX = useRef([
     useMotionValue(0), useMotionValue(0), useMotionValue(0), useMotionValue(0),
   ]);
@@ -312,48 +254,39 @@ export default function Home() {
     useMotionValue(0), useMotionValue(0), useMotionValue(0), useMotionValue(0),
   ]);
 
-  /* ── sync motion values to orbit when orbiting ── */
-  useEffect(() => {
-    if (!isOrbiting) return;
-    btnX.current.forEach((mv, i) => {
-      const pos = getPos(i, 4, orbitAngle, orbitRadius);
-      mv.set(pos.x - 28);
-    });
-    btnY.current.forEach((mv, i) => {
-      const pos = getPos(i, 4, orbitAngle, orbitRadius);
-      mv.set(pos.y - 28);
-    });
-  }, [orbitAngle, isOrbiting, orbitRadius]);
+  const getPos = useCallback((index, total, angle, r) => {
+    const rad = (((index / total) * 360 + angle) * Math.PI) / 180;
+    return { x: Math.cos(rad) * r, y: Math.sin(rad) * r };
+  }, []);
 
-  /* ── per-button drag state ── */
+  useEffect(() => {
+    orbitIntervalRef.current = setInterval(() => {
+      angleRef.current = (angleRef.current + 0.4) % 360;
+      btnX.current.forEach((mv, i) => {
+        if (freeRef.current[i]) return;
+        const pos = getPos(i, 4, angleRef.current, orbitRadius);
+        mv.set(pos.x - 28);
+      });
+      btnY.current.forEach((mv, i) => {
+        if (freeRef.current[i]) return;
+        const pos = getPos(i, 4, angleRef.current, orbitRadius);
+        mv.set(pos.y - 28);
+      });
+    }, 16);
+    return () => clearInterval(orbitIntervalRef.current);
+  }, [orbitRadius, getPos]);
+
   const pointerDownPos = useRef({});
   const isDragging     = useRef({});
 
-  /*
-   * returnToOrbit — spring the button back, then resume orbit.
-   * Key fix: we only call setIsOrbiting(true) AFTER the spring
-   * fully settles. Before that we manually keep updating the
-   * motion value via the spring so there's zero fight with the
-   * orbit sync effect (which only runs when isOrbiting===true).
-   */
   const returnToOrbit = useCallback((i) => {
-    const pos = getPos(i, 4, angleRef.current, orbitRadius);
+    const pos     = getPos(i, 4, angleRef.current, orbitRadius);
     const targetX = pos.x - 28;
     const targetY = pos.y - 28;
-
-    // Spring back — ~700 ms to settle with these params
     const stopX = motionAnimate(btnX.current[i], targetX, { type: "spring", stiffness: 160, damping: 20 });
     const stopY = motionAnimate(btnY.current[i], targetY, { type: "spring", stiffness: 160, damping: 20 });
-
-    // Resume orbit only after spring is done so they don't fight
-    setTimeout(() => {
-      stopX();
-      stopY();
-      if (draggedSet.current.size === 0) {
-        setIsOrbiting(true);
-      }
-    }, 750);
-  }, [orbitRadius]);
+    setTimeout(() => { stopX(); stopY(); freeRef.current[i] = false; }, 750);
+  }, [orbitRadius, getPos]);
 
   const handleDragStart = useCallback((i, event) => {
     const e = event?.touches?.[0] || event;
@@ -367,39 +300,22 @@ export default function Home() {
     const e = event?.touches?.[0] || event;
     const origin = pointerDownPos.current[i] || { x: 0, y: 0 };
     const dist = Math.hypot((e?.clientX ?? 0) - origin.x, (e?.clientY ?? 0) - origin.y);
-    if (dist > 8) {
-      isDragging.current[i] = true;
-      setIsOrbiting(false);
-      draggedSet.current.add(i);
-    }
+    if (dist > 8) { isDragging.current[i] = true; freeRef.current[i] = true; }
   }, []);
 
   const handleDragEnd = useCallback((i, info) => {
     const wasDragged = isDragging.current[i];
     isDragging.current[i] = false;
     pointerDownPos.current[i] = null;
-
-    if (!wasDragged) {
-      draggedSet.current.delete(i);
-      return;
-    }
-
-    draggedSet.current.delete(i);
+    if (!wasDragged) { freeRef.current[i] = false; return; }
     const dist = Math.hypot(info.offset.x, info.offset.y);
-
     if (dist < 60) {
-      // Tiny drag — spring back immediately
       returnToOrbit(i);
     } else {
-      // Big fling — wait 3 s then spring back
-      returnTimers.current[i] = setTimeout(() => {
-        draggedSet.current.delete(i);
-        returnToOrbit(i);
-      }, 3000);
+      returnTimers.current[i] = setTimeout(() => returnToOrbit(i), 3000);
     }
   }, [returnToOrbit]);
 
-  /* ── logout ── */
   async function handleLogout() {
     try {
       await axios.get(`${serverUrl}/api/auth/logout`, { withCredentials: true });
@@ -408,7 +324,6 @@ export default function Home() {
     } catch (e) { console.log(e); }
   }
 
-  /* ── buttons ── */
   const orbitButtons = [
     { label: "Customize", icon: "\u2699\uFE0F",  color: "cyan",   action: () => navigate("/customize") },
     { label: "History",   icon: "\uD83D\uDCDC",  color: "purple", action: () => setShowHistory(true) },
@@ -422,7 +337,6 @@ export default function Home() {
     red:    { border:"border-red-400",    text:"text-red-300",    glow:"shadow-[0_0_18px_#f00a]",     bg:"bg-red-400/10" },
   };
 
-  /* ── boot text ── */
   const bootLines = [
     "System Online...",
     "Scanning user identity...",
@@ -443,7 +357,6 @@ export default function Home() {
     return () => clearTimeout(t);
   }, [bootChar, bootLine]);
 
-  /* ── typing animation ── */
   const introLines = [(userData?.name || "User") + " detected.", "Initializing your AI assistant..."];
   const loopMsg    = "Your AI is fully operational \u26A1";
   const [text,    setText]    = useState("");
@@ -480,9 +393,6 @@ export default function Home() {
     }
   }, [tChar, tLine, stage, lChar, looping, lCount]);
 
-  /* ══════════════════════════════════════════════
-     SPEAK
-  ══════════════════════════════════════════════ */
   const speak = useCallback((textToSpeak) => {
     if (!textToSpeak) return;
     synth.cancel();
@@ -520,6 +430,7 @@ export default function Home() {
 
   /* ══════════════════════════════════════════════
      CONTINUOUS SPEECH RECOGNITION
+     FIX 3: skip name gate when clapActiveRef is true
   ══════════════════════════════════════════════ */
   useEffect(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -552,8 +463,12 @@ export default function Home() {
         const transcript = result[0].transcript.trim();
         console.log("Heard:", transcript);
 
-        const name = userData?.assistantName?.toLowerCase() || "";
-        if (!name || !transcript.toLowerCase().includes(name)) return;
+        // FIX 3: if clap activated, skip name gate for ONE command
+        if (!clapActiveRef.current) {
+          const name = userData?.assistantName?.toLowerCase() || "";
+          if (!name || !transcript.toLowerCase().includes(name)) return;
+        }
+        clapActiveRef.current = false; // reset after one command
 
         busy = true;
         stopCurrent();
@@ -603,31 +518,33 @@ export default function Home() {
     };
   }, [userData, language]);
 
-  /* ── contacts ── */
   const contacts = {
     "mom":"345312534555","mummy":"914345345444","maa":"435134534555","mother":"432513453455",
     "dad":"534534534666","daddy":"343534453455","papa":"34531453455",
   };
 
-  /* ── command handler ── */
+  /* ── command handler ──
+     FIX 2: open links in same tab on mobile so browser allows it
+  ── */
   const handleCommand = useCallback((data) => {
     if (!data) return;
     const { type, userInput, response, whatsapp } = data;
     if (response) speak(response);
     setTimeout(() => {
+      const open = (url) => window.open(url, "_blank") || (window.location.href = url);
       if (type === "google_search")
-        window.open("https://www.google.com/search?q=" + encodeURIComponent(userInput), "_blank");
+        open("https://www.google.com/search?q=" + encodeURIComponent(userInput));
       if (type === "youtube_search" || type === "youtube_play")
-        window.open("https://www.youtube.com/results?search_query=" + encodeURIComponent(userInput), "_blank");
-      if (type === "calculator_open") window.open("https://www.google.com/search?q=calculator", "_blank");
-      if (type === "instagram_open")  window.open("https://www.instagram.com/", "_blank");
-      if (type === "facebook_open")   window.open("https://www.facebook.com/", "_blank");
+        open("https://www.youtube.com/results?search_query=" + encodeURIComponent(userInput));
+      if (type === "calculator_open") open("https://www.google.com/search?q=calculator");
+      if (type === "instagram_open")  open("https://www.instagram.com/");
+      if (type === "facebook_open")   open("https://www.facebook.com/");
       if (type === "weather_show")
-        window.open("https://www.google.com/search?q=weather+" + encodeURIComponent(userInput), "_blank");
+        open("https://www.google.com/search?q=weather+" + encodeURIComponent(userInput));
       if (type === "whatsapp_message" && whatsapp) {
         const number = contacts[whatsapp.contact?.toLowerCase()];
         if (number)
-          window.open("https://wa.me/" + number + "?text=" + encodeURIComponent(whatsapp.message || ""), "_blank");
+          open("https://wa.me/" + number + "?text=" + encodeURIComponent(whatsapp.message || ""));
         else
           speak(getString(languageRef.current, "noContact", whatsapp.contact));
       }
@@ -636,34 +553,22 @@ export default function Home() {
 
   useEffect(() => { handleCommandRef.current = handleCommand; }, [handleCommand]);
 
-  /* ── clap detection ── */
+  /* ── clap detection ──
+     FIX 3: set clapActiveRef so next voice command skips name gate
+  ── */
   useEffect(() => {
     let ac, analyser, raf;
     let lastClap = 0, cooldown = false;
 
     const activateAssistant = () => {
       if (isSpeakingRef.current) return;
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) return;
-
       const greeting = getString(languageRef.current, "greeting", userData?.name || "");
       speak(greeting);
       setListening(true);
-
-      const r = new SR();
-      r.lang = languageRef.current;
-      r.onresult = async (e) => {
-        const t = e.results[0][0].transcript.trim();
-        setListening(false);
-        setDisplayText("\uD83C\uDF99\uFE0F " + t);
-        setChatHistory(prev => [...prev, { role: "user", text: t }]);
-        const data = await getGeminiResponse(t);
-        if (data?.response) setChatHistory(prev => [...prev, { role: "ai", text: data.response }]);
-        if (handleCommandRef.current) handleCommandRef.current(data);
-      };
-      r.onerror = () => setListening(false);
-      r.onend   = () => setListening(false);
-      setTimeout(() => { try { r.start(); } catch (_) {} }, 1800);
+      // FIX 3: mark clap active so recognition skips name gate
+      clapActiveRef.current = true;
+      // reset after 8s in case user doesn't speak
+      setTimeout(() => { clapActiveRef.current = false; }, 8000);
     };
 
     const start = async () => {
@@ -697,17 +602,11 @@ export default function Home() {
     return () => { cancelAnimationFrame(raf); if (ac) ac.close(); };
   }, [userData, speak, handleCommand]);
 
-  /* ── responsive layout ── */
   const containerSize = orbitRadius < 130 ? 300 : 370;
   const avatarSize    = orbitRadius < 130 ? "w-36 h-36" : "w-48 h-48";
   const ringBase      = orbitRadius < 130 ? 190 : 250;
-
-  /* waveform mode */
   const waveMode = speaking ? "speaking" : listening ? "listening" : "idle";
 
-  /* ══════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════ */
   return (
     <div
       className="w-full min-h-screen flex flex-col justify-center items-center
@@ -720,7 +619,6 @@ export default function Home() {
       <div className="hud tl"/><div className="hud tr"/>
       <div className="hud bl"/><div className="hud br"/>
 
-      {/* listening badge */}
       <AnimatePresence>
         {listening && (
           <motion.div
@@ -738,7 +636,6 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* ── chat history panel ── */}
       <AnimatePresence>
         {showHistory && (
           <motion.div
@@ -778,7 +675,6 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* ── settings panel ── */}
       <AnimatePresence>
         {showSettings && (
           <motion.div
@@ -793,7 +689,6 @@ export default function Home() {
                 {"\u2715"}
               </button>
             </div>
-
             <div className="mb-6">
               <p className="text-cyan-400/70 text-[10px] uppercase tracking-widest mb-3">
                 {"\uD83C\uDFA4 Voice Gender"}
@@ -810,7 +705,6 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
             <div className="mb-6">
               <p className="text-cyan-400/70 text-[10px] uppercase tracking-widest mb-3">
                 {"\uD83C\uDF10 Language"}
@@ -827,7 +721,6 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
             <button
               onClick={() => {
                 const line = getString(
@@ -841,7 +734,6 @@ export default function Home() {
                          border border-cyan-400/40 text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200">
               {"\uD83D\uDD0A Test Voice"}
             </button>
-
             <div className="mt-auto p-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5">
               <p className="text-[10px] text-cyan-400/50 uppercase tracking-widest mb-2">Active Config</p>
               <p className="text-cyan-300 text-sm">Voice: <span className="font-bold capitalize">{voiceGender}</span></p>
@@ -851,17 +743,14 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* ── boot ── */}
       {stage === "boot" && (
         <pre className="relative z-10 font-mono text-base sm:text-lg whitespace-pre-line drop-shadow-[0_0_8px_#0ff] px-6">
           {bootText}
         </pre>
       )}
 
-      {/* ── main ui ── */}
       {stage === "ui" && (
         <div className="relative z-10 flex flex-col items-center w-full px-4">
-
           <motion.h1
             initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="text-3xl sm:text-5xl font-extrabold mb-5
@@ -871,11 +760,8 @@ export default function Home() {
             Welcome Back
           </motion.h1>
 
-          {/* orbit container */}
           <div className="relative flex justify-center items-center flex-shrink-0"
                style={{ width: containerSize, height: containerSize }}>
-
-            {/* rings */}
             {[0, 1, 2].map(i => (
               <motion.div key={i}
                 className="absolute rounded-full border border-cyan-400/20"
@@ -885,7 +771,6 @@ export default function Home() {
               />
             ))}
 
-            {/* orbital buttons */}
             {orbitButtons.map((btn, i) => {
               const c = colorMap[btn.color];
               return (
@@ -922,7 +807,6 @@ export default function Home() {
               );
             })}
 
-            {/* listening ring */}
             {listening && (
               <motion.div className="absolute rounded-full border-2 border-cyan-400"
                 style={{ width: ringBase - 38, height: ringBase - 38 }}
@@ -931,7 +815,6 @@ export default function Home() {
               />
             )}
 
-            {/* glow + scan */}
             <motion.div className="absolute rounded-full bg-cyan-400/20 blur-2xl"
               style={{ width: ringBase - 55, height: ringBase - 55 }}
               animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity }}
@@ -942,7 +825,6 @@ export default function Home() {
               transition={{ duration: 3, repeat: Infinity }}
             />
 
-            {/* avatar */}
             {userData?.assistantImage && (
               <motion.img src={userData.assistantImage} alt="Assistant"
                 className={avatarSize + " rounded-full object-cover ring-4 ring-cyan-400 shadow-[0_0_40px_#0ff] relative z-10"}
@@ -952,13 +834,11 @@ export default function Home() {
             )}
           </div>
 
-          {/* name */}
           <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
             className="mt-2 text-xl sm:text-3xl font-bold text-cyan-300">
             {userData?.assistantName || "Your AI"}
           </motion.h2>
 
-          {/* ── WAVEFORM ── */}
           <div className="mt-3 flex flex-col items-center gap-1">
             <AnimatePresence mode="wait">
               <motion.div key={waveMode}
@@ -970,20 +850,16 @@ export default function Home() {
                 <Waveform mode={waveMode} />
               </motion.div>
             </AnimatePresence>
-            {/* mode label */}
             <motion.p
               key={waveMode + "_label"}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="text-[10px] font-mono tracking-[0.2em] uppercase"
-              style={{
-                color: speaking ? "#a78bfa" : listening ? "#22d3ee" : "rgba(34,211,238,0.3)"
-              }}
+              style={{ color: speaking ? "#a78bfa" : listening ? "#22d3ee" : "rgba(34,211,238,0.3)" }}
             >
               {speaking ? "[ TRANSMITTING ]" : listening ? "[ RECEIVING ]" : "[ STANDBY ]"}
             </motion.p>
           </div>
 
-          {/* display text */}
           <AnimatePresence>
             {displayText && (
               <motion.div key={displayText}
@@ -996,7 +872,6 @@ export default function Home() {
             )}
           </AnimatePresence>
 
-          {/* loop text */}
           <motion.pre initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }}
             className="mt-3 font-mono whitespace-pre-line drop-shadow-[0_0_8px_#0ff] text-xs sm:text-sm min-h-[26px]">
             {text}
